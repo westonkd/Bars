@@ -1,0 +1,29 @@
+{
+    "author": "wdrans@gmail.com",
+    "dependencies": {},
+    "keywords": [],
+    "name": "bars",
+    "pebble": {
+        "capabilities": [
+            ""
+        ],
+        "displayName": "BARS",
+        "enableMultiJS": true,
+        "messageKeys": [],
+        "projectType": "native",
+        "resources": {
+            "media": []
+        },
+        "sdkVersion": "3",
+        "targetPlatforms": [
+            "aplite",
+            "basalt",
+            "chalk"
+        ],
+        "uuid": "6188991f-c0d9-4cbb-b598-e06c661c7f2b",
+        "watchapp": {
+            "watchface": true
+        }
+    },
+    "version": "1.0.0"
+}
