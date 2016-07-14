@@ -8,7 +8,8 @@ static Layer *s_canvas_layer;
 #define MARGIN 30
 #define MARGIN_SMALL 5
 #define HOUR_HEIGHT 30
-#define MINUTE_HEIGHT 15
+#define MINUTE_HEIGHT 20
+#define DATE_HEIGHT 15
 
 int rec_count = MARGIN;
 
@@ -16,6 +17,9 @@ int rec_count = MARGIN;
 * Draw a rectangle
 ***********************************************/
 static void draw_rectangle(GContext *ctx, GRect bounds, int height, int increment, int value, int offset, bool start_left, GColor8 color) {
+  time_t temp = time(NULL);
+  struct tm *tick_time = localtime(&temp);
+  
   // Set the line color
   graphics_context_set_stroke_color(ctx, color);
 
@@ -39,6 +43,32 @@ static void draw_rectangle(GContext *ctx, GRect bounds, int height, int incremen
   
   // Reset the stroke
   graphics_context_set_stroke_width(ctx, 1);
+  
+  //Draw the text
+  graphics_context_set_text_color(ctx, GColorBlack);
+  
+  if (height == HOUR_HEIGHT) {
+    //Get the hour
+    static char date_buffer[5];
+    strftime(date_buffer, sizeof(date_buffer), "%l", tick_time);
+    
+    // Draw
+    graphics_draw_text(ctx,date_buffer, fonts_get_system_font(FONT_KEY_LECO_20_BOLD_NUMBERS), GRect(end.x - 30, end.y + 4, 30, 30), GTextOverflowModeWordWrap, GTextAlignmentCenter , NULL);
+  } else if (height == MINUTE_HEIGHT) {
+     //Get the hour
+    static char date_buffer[5];
+    strftime(date_buffer, sizeof(date_buffer), "%M", tick_time);
+    
+    // Draw
+    graphics_draw_text(ctx,date_buffer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD), GRect(end.x - 27, end.y - 1, 30, 30), GTextOverflowModeWordWrap, GTextAlignmentCenter , NULL);
+  } else if (height == DATE_HEIGHT) {
+     //Get the hour
+    static char date_buffer[5];
+    strftime(date_buffer, sizeof(date_buffer), "%e", tick_time);
+    
+    // Draw
+    graphics_draw_text(ctx,date_buffer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD), GRect(end.x - 27, end.y - 4, 30, 30), GTextOverflowModeWordWrap, GTextAlignmentCenter , NULL);
+  }
   
   // Redraw
   layer_mark_dirty(s_canvas_layer);
@@ -66,8 +96,20 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
   // Draw the minute
   draw_rectangle(ctx,bounds,MINUTE_HEIGHT, 60, tick_time->tm_min, MARGIN * 2 + MARGIN_SMALL, true, GColorLightGray);
   
+  // Draw the date
+  draw_rectangle(ctx,bounds,DATE_HEIGHT, 30, tick_time->tm_mday, MARGIN * 3 , true, GColorDarkGray);
+  
 //   graphics_context_set_stroke_width(ctx, 5);
 //   graphics_draw_circle(ctx, center, 50);
+}
+
+static void update_time() {
+  // Mark Dirty
+  layer_mark_dirty(s_canvas_layer);
+}
+
+static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
+  update_time();
 }
 
 static void main_window_load(Window *window) {
@@ -103,6 +145,9 @@ void handle_init(void) {
     .load = main_window_load,
     .unload = main_window_unload
   });
+  
+  // Register the time change handler
+  tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
   
   window_stack_push(main_window, true);
 }
